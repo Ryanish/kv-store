@@ -1,80 +1,74 @@
 // Create Kv Store - start creating a restful API using HTTP than can obtain data from the kv-store which is basically a map
 
+//Develop an in-memory key value store. The store must support data storage and retrieval through TCP, UDP, HTTP and HTTPS REST interfaces. The store must cater for arbitrary data types.
+
+// good source - https://earthly.dev/blog/golang-http/
+
 package main
 
 import (
-	//"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
+	"encoding/json"
 )
 
 func main() {
-	fmt.Println("Hello World")
-	startDatabase()
-	webhttp()
-	// Define structure
-	// var CRUDresponse = []APIresponse{
-	// 	APIresponse{Title: "Hello", Desc: "Article Description", Content: "Article Content"},
-	// 	APIresponse{Title: "Hello 2", Desc: "Article Description", Content: "Article Content"},
-	// }
-	handleRequests()
-}
+	//Endpoints
+	http.HandleFunc("/kvstore_get", handlerGet)
 
-// Create KV Store - essentially a "map" in Go. TODO. Needs to be set to CRUD in memory, rather than be hardcoded
-func startDatabase() {
-	kvstore := make(map[string]int)
-
-	kvstore["entry one"] = 1
-	kvstore["entry two"] = 2
-	kvstore["entry three"] = 3
-
-	fmt.Println("Database Ready")
-}
-
-////////////////////////////////////////
-
-// main list of endpoints
-func webhttp() {
-	http.HandleFunc("/kvstore", primaryPage)
-	http.HandleFunc("/returnalltitles", returnAllTitles)
+	//Basic Web Server
 	err := http.ListenAndServe("localhost:8080", nil)
-	log.Fatal(err)
-}
-
-// HTTP web services - "viewhandler is too vague"
-func primaryPage(writer http.ResponseWriter, request *http.Request) {
-	fmt.Println("Endpoint Hit: kvstore")
-	message := []byte("KV Store Service is running - HOORAY FOR GOPHERS.")
-	_, err := writer.Write(message)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func returnAllTitles(writer http.ResponseWriter, r *http.Request) {
-	//loads in command once hit - TODO - could log this out?
-	fmt.Println("Endpoint Hit: returnAllArticles")
-	message := []byte("this page loads all the articles titles.")
-	_, err := writer.Write(message)
-	if err != nil {
-		log.Fatal(err)
+func handlerGet(writer http.ResponseWriter, request *http.Request) {
+	if request.URL.Path != "/kvstore_get" {
+		http.Error(writer, "404 not found", http.StatusNotFound)
+		return
 	}
-// 	json.NewEncoder(w).Encode(CRUDresponse)
+
+	 if request.Method != "GET" {
+		http.Error(writer, "Method is not supported.", http.StatusNotFound)
+	 }
+
+	// KV Store
+	kvstore := make(map[string]int)
+	//adding in 2 kv pairs for example / hard coded purposes
+	kvstore["ryan"] = 36
+	kvstore["mikey"] =  29
+
+	// adds a kv pair - I don't care for handling conflicts yet
+
+
+	// deletes a kv pair 
+	//delete(kvstore["mikey"])
+
+	fmt.Println(kvstore["ryan"])
 }
 
-/////////////////////////
 
-type CRUDresponse struct {
-	Title   string `json:"Title"`
-	Desc    string `json:"desc"`
-	Content string `json:"content"`
-}
+// Post - need to confirm GET first, get the basics nailed and documented.
 
-func handleRequests() {
-//http.HandleFunc("/", homePage)
-// add our articles route and map it to our 
-// returnAllArticles function like so
-//http.HandleFunc("/articles", returnAllArticles)
-log.Fatal(http.ListenAndServe(":10000", nil))
-}
+// func handlerEncode(writer http.ResponseWriter, request *http.Request) {
+// 	if request.URL.Path != "/kvstoreencode" {
+// 		http.Error(writer, "404 not found", http.StatusNotFound)
+// 		return
+// 	}
+
+// 	// if request.Method != "GET" {
+// 	// 	http.Error(writer, "Method is not supported.", http.StatusNotFound)
+// 	// }
+
+// 	fmt.Println("Endpoint Hit: kvstoreEncode")
+// 	JohnSmith := Kvstore{
+// 		ID: 3,
+// 		DataEntry: "John",
+// 	}
+
+// 	json.NewEncoder(writer).Encode(JohnSmith)
+
+// }
